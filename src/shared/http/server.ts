@@ -1,1 +1,5 @@
-console.log("object");
+function log(texto: string) {
+    console.log(texto);
+}
+
+log('Hello world');
