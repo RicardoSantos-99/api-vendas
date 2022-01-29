@@ -148,3 +148,4 @@ uploads/*
 !uploads/.gitkeep
 .idea
 .vscode
+build
