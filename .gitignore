@@ -149,3 +149,5 @@ uploads/*
 .idea
 .vscode
 build
+
+.docker/dbdata
