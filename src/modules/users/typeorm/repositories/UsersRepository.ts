@@ -2,7 +2,7 @@ import User from '../entities/User';
 import { EntityRepository, Repository } from 'typeorm';
 
 @EntityRepository(User)
-class UserRepository extends Repository<User> {
+class UsersRepository extends Repository<User> {
 	public async findByName(name: string): Promise<User | undefined> {
 		return await this.findOne({ where: { name } });
 	}
@@ -16,4 +16,4 @@ class UserRepository extends Repository<User> {
 	}
 }
 
-export default UserRepository;
+export default UsersRepository;
