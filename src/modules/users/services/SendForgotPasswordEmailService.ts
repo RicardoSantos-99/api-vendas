@@ -17,11 +17,21 @@ class SendForgotPasswordEmailService {
 
 		if (!user) throw new AppError('User does not exists.');
 
-		const userToken = await userTokensRepository.generate(user.id);
+		const { token } = await userTokensRepository.generate(user.id);
 
 		await EmailService.sendMail({
-			to: email,
-			body: `<p>You requested a password reset. Click here to reset your password: <a href="http://localhost:3000/password/reset?token=${userToken?.token}">Reset Password</a></p>`,
+			to: {
+				name: user.name,
+				email: user.email,
+			},
+			subject: '[API Vendas] Recuperação de senha',
+			templateData: {
+				template: 'Olá {{name}} - {{token}}',
+				variables: {
+					name: user.name,
+					token,
+				},
+			},
 		});
 	}
 }
