@@ -151,3 +151,4 @@ uploads/*
 build
 
 .docker/dbdata
+ormconfig.json
