@@ -9,7 +9,7 @@ export default class UsersAvatarController {
 	): Promise<Response> {
 		const updateAvatar = new UpdateUserAvatarService();
 
-		const user = updateAvatar.execute({
+		const user = await updateAvatar.execute({
 			user_id: request.user.id,
 			avatarFilename: request.file.filename,
 		});
