@@ -6,12 +6,12 @@
 	"password": "docker",
 	"database": "apivendas",
 	"migrations": [
-		"./src/shared/typeorm/migrations/*.ts"
+		"./dist/shared/typeorm/migrations/*.js"
 	],
 	"entities": [
-		"./src/modules/**/typeorm/entities/*.ts"
+		"./dist/modules/**/typeorm/entities/*.js"
 	],
 	"cli": {
-		"migrationsDir": "./src/shared/typeorm/migrations"
+		"migrationsDir": "./dist/shared/typeorm/migrations"
 	}
 }
