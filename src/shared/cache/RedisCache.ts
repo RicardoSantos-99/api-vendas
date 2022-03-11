@@ -1,11 +1,12 @@
 import Redis, { Redis as RedisClient } from 'ioredis';
 import cacheConfig from '@config/cache';
+
 class RedisCache {
 	private client: RedisClient;
 	private connected = false;
 
 	constructor() {
-		if (this.connected) {
+		if (!this.connected) {
 			this.client = new Redis(cacheConfig.config.redis);
 			this.connected = true;
 		}
