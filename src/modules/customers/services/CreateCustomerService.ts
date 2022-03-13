@@ -19,7 +19,7 @@ class CreateCustomerService {
 			name,
 			email,
 		});
-		await customersRepository.save(customer);
+
 		return customer;
 	}
 }
