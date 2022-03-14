@@ -1,33 +1,40 @@
-import Customer from '@modules/customers/infra/typeorm/entities/Customer';
-import { EntityRepository, Repository } from 'typeorm';
+import { getRepository, Repository } from 'typeorm';
 import Order from '@modules/orders/infra/typeorm/entities/Order';
+import { ICreateOrder } from '@modules/orders/domain/models/ICreateOrder';
+import { IOrdersRepository } from '@modules/orders/domain/repositories/IOrdersRepository';
 
-interface IProduct {
-	product_id: string;
-	price: number;
-	quantity: number;
-}
+class OrdersRepository implements IOrdersRepository {
+	private ormRepository: Repository<Order>;
+	constructor() {
+		this.ormRepository = getRepository(Order);
+	}
 
-interface IRequest {
-	customer: Customer;
-	products: IProduct[];
-}
-
-@EntityRepository(Order)
-class OrdersRepository extends Repository<Order> {
 	public async findById(id: string): Promise<Order | undefined> {
-		return this.findOne(id, {
+		return this.ormRepository.findOne(id, {
 			relations: ['order_products', 'customer'],
 		});
 	}
 
-	public async createOrder({ customer, products }: IRequest): Promise<Order> {
-		const order = this.create({
+	public async createOrder({
+		customer,
+		products,
+	}: ICreateOrder): Promise<Order> {
+		const order = this.ormRepository.create({
 			customer,
 			order_products: products,
 		});
 
-		await this.save(order);
+		await this.ormRepository.save(order);
+
+		return order;
+	}
+	public async create({ customer, products }: ICreateOrder): Promise<Order> {
+		const order = this.ormRepository.create({
+			customer,
+			order_products: products,
+		});
+
+		await this.ormRepository.save(order);
 
 		return order;
 	}

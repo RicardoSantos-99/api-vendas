@@ -1,27 +1,33 @@
+import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
-import { getCustomRepository } from 'typeorm';
-import { isAfter, addHours } from 'date-fns';
-import UsersRepository from '@modules/users/infra/typeorm/repositories/UsersRepository';
-import UserTokensRepository from '@modules/users/infra/typeorm/repositories/UserTokensRepository';
 import { hash } from 'bcryptjs';
+import { isAfter, addHours } from 'date-fns';
+import { IResetPassword } from '@modules/users/domain/models/IResetPassword';
+import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
+import { IUserTokensRepository } from '@modules/users/domain/repositories/IUserTokensRepository';
 
-interface IRequest {
-	token: string;
-	password: string;
-}
-
+@injectable()
 class ResetPasswordService {
-	public async execute({ token, password }: IRequest): Promise<void> {
-		const usersRepository = getCustomRepository(UsersRepository);
+	constructor(
+		@inject('UsersRepository')
+		private usersRepository: IUsersRepository,
 
-		const userTokensRepository = getCustomRepository(UserTokensRepository);
+		@inject('UserTokensRepository')
+		private userTokensRepository: IUserTokensRepository,
+	) {}
 
-		const userToken = await userTokensRepository.findByToken(token);
+	public async execute({ token, password }: IResetPassword): Promise<void> {
+		const userToken = await this.userTokensRepository.findByToken(token);
 
-		if (!userToken) throw new AppError('User token does not exists.');
-		const user = await usersRepository.findById(userToken.user_id);
+		if (!userToken) {
+			throw new AppError('User Token does not exists.');
+		}
 
-		if (!user) throw new AppError('User token does not exists.');
+		const user = await this.usersRepository.findById(userToken.user_id);
+
+		if (!user) {
+			throw new AppError('User does not exists.');
+		}
 
 		const tokenCreatedAt = userToken.created_at;
 		const compareDate = addHours(tokenCreatedAt, 2);
@@ -32,7 +38,7 @@ class ResetPasswordService {
 
 		user.password = await hash(password, 8);
 
-		await usersRepository.save(user);
+		await this.usersRepository.save(user);
 	}
 }
 

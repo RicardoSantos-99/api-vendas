@@ -19,9 +19,13 @@ class RedisCache {
 	public async recover<T>(key: string): Promise<T | null> {
 		const data = await this.client.get(key);
 
-		if (!data) return null;
+		if (!data) {
+			return null;
+		}
 
-		return JSON.parse(data) as T;
+		const parsedData = JSON.parse(data) as T;
+
+		return parsedData;
 	}
 
 	public async invalidate(key: string): Promise<void> {

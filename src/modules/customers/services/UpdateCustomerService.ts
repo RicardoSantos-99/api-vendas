@@ -1,31 +1,42 @@
-import { getCustomRepository } from 'typeorm';
+import { injectable, inject } from 'tsyringe';
 import Customer from '@modules/customers/infra/typeorm/entities/Customer';
-import CustomersRepository from '@modules/customers/infra/typeorm/repositories/CustomersRepository';
 import AppError from '@shared/errors/AppError';
+import { IUpdateCustomer } from '@modules/customers/domain/models/IUpdateCustomer';
+import { ICustomersRepository } from '@modules/customers/domain/repositories/ICustomersRepository';
 
-interface IRequest {
-	id: string;
-	name: string;
-	email: string;
-}
-
+@injectable()
 class UpdateCustomerService {
-	public async execute({ email, id, name }: IRequest): Promise<Customer> {
-		const customersRepository = getCustomRepository(CustomersRepository);
-		const customer = await customersRepository.findById(id);
+	constructor(
+		@inject('CustomersRepository')
+		private customersRepository: ICustomersRepository,
+	) {}
 
-		if (!customer) throw new AppError('Customer not found');
+	public async execute({
+		id,
+		name,
+		email,
+	}: IUpdateCustomer): Promise<Customer> {
+		const customer = await this.customersRepository.findById(id);
 
-		const customerExists = await customersRepository.findByEmail(email);
+		if (!customer) {
+			throw new AppError('Customer not found.');
+		}
+
+		const customerExists = await this.customersRepository.findByEmail(
+			email,
+		);
 
 		if (customerExists && email !== customer.email) {
-			throw new AppError('Email already exists');
+			throw new AppError(
+				'There is already one customer with this email.',
+			);
 		}
 
 		customer.name = name;
 		customer.email = email;
 
-		await customersRepository.save(customer);
+		await this.customersRepository.save(customer);
+
 		return customer;
 	}
 }
