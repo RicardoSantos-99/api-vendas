@@ -27,6 +27,10 @@ class CustomersRepository implements ICustomersRepository {
 		await this.ormRepository.remove(customer);
 	}
 
+	public async findAll(): Promise<Customer[]> {
+		return await this.ormRepository.find();
+	}
+
 	public async findByName(name: string): Promise<Customer | undefined> {
 		return await this.ormRepository.findOne({ where: { name } });
 	}

@@ -1,41 +1,45 @@
+import { inject, injectable } from 'tsyringe';
 import AppError from '@shared/errors/AppError';
 import { compare } from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
+import { sign, Secret } from 'jsonwebtoken';
 import authConfig from '@config/auth';
-import { getCustomRepository } from 'typeorm';
-import User from '@modules/users/infra/typeorm/entities/User';
-import UsersRepository from '@modules/users/infra/typeorm/repositories/UsersRepository';
+import { ICreateSession } from '@modules/users/domain/models/ICreateSession';
+import { IUserAuthenticated } from '@modules/users/domain/models/IUserAuthenticated';
+import { IUsersRepository } from '@modules/users/domain/repositories/IUsersRepository';
 
-interface IRequest {
-	password: string;
-	email: string;
-}
+@injectable()
+class CreateSessionsService {
+	constructor(
+		@inject('UsersRepository')
+		private usersRepository: IUsersRepository,
+	) {}
 
-interface IResponse {
-	user: User;
-	token: string;
-}
+	public async execute({
+		email,
+		password,
+	}: ICreateSession): Promise<IUserAuthenticated> {
+		const user = await this.usersRepository.findByEmail(email);
 
-class CreateSessionService {
-	public async execute({ email, password }: IRequest): Promise<IResponse> {
-		const usersRepository = getCustomRepository(UsersRepository);
-
-		const user = await usersRepository.findByEmail(email);
-
-		if (!user) throw new AppError('Incorrect email/password combination');
+		if (!user) {
+			throw new AppError('Incorrect email/password combination.', 401);
+		}
 
 		const passwordConfirmed = await compare(password, user.password);
 
-		if (!passwordConfirmed)
-			throw new AppError('Incorrect email/password combination');
+		if (!passwordConfirmed) {
+			throw new AppError('Incorrect email/password combination.', 401);
+		}
 
-		const token = sign({}, authConfig.jwt.secret, {
+		const token = sign({}, authConfig.jwt.secret as Secret, {
 			subject: user.id,
 			expiresIn: authConfig.jwt.expiresIn,
 		});
 
-		return { user, token };
+		return {
+			user,
+			token,
+		};
 	}
 }
 
-export default CreateSessionService;
+export default CreateSessionsService;
