@@ -40,6 +40,6 @@ describe('CreateCustomer', () => {
 				name: 'John Doe',
 				email: 'john@teste.com',
 			}),
-		).rejects.toHaveProperty('message', 'Customer already exists');
+		).rejects.toHaveProperty('message', 'Email already exists');
 	});
 });
